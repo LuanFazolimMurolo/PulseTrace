@@ -1,0 +1,15 @@
+PulseTrace 0.1.0 — Windows x64
+
+Este pacote contém o executável sem instalador. Ele NÃO é independente:
+requer Windows 10/11 x64 e Microsoft Edge WebView2 Runtime instalado.
+O executável não contém o runtime WebView2. Use o instalador NSIS se precisar
+provisionar esse runtime; ele é configurado para incluir o instalador offline.
+
+Não há certificado de assinatura configurado. O executável não é declarado
+assinado digitalmente. A validação em uma instalação limpa de Windows ainda
+deve confirmar dependências nativas antes de uma publicação pública.
+
+Extraia o ZIP, execute pulsetrace.exe e importe o CSV.
+Não é necessário Python, Node.js, Rust, banco de dados ou terminal para usar.
+HWiNFO64 não acompanha este pacote e não precisa estar aberto na análise.
+Sessões e marcadores são mantidos na memória; exporte relatórios antes de fechar.

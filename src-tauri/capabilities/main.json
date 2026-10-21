@@ -1,0 +1,17 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Acesso apenas aos arquivos escolhidos nos diálogos pelo usuário. Sem shell, rede ou escopo global de filesystem.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "fs:allow-open",
+    "fs:allow-read",
+    "fs:allow-fstat",
+    "fs:deny-default",
+    "fs:allow-read-dir",
+    "fs:allow-write-file"
+  ]
+}
