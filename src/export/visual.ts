@@ -19,7 +19,8 @@ export function svgChart(session: Session, sensors: Sensor[], range: TimeRange):
       values.push(s.values[i]);
   }
   if (!values.length) return '<p>Sem leituras para o gráfico selecionado.</p>';
-  let lo = Math.min(...values), hi = Math.max(...values);
+  let lo = Infinity, hi = -Infinity;
+  for (const v of values) { if (v < lo) lo = v; if (v > hi) hi = v; }
   if (hi === lo) { hi += 1; lo -= 1; }
   const gap = (hi - lo) * 0.08;
   lo -= gap; hi += gap;
@@ -111,7 +112,8 @@ export function visualPdf(doc: jsPDF, session: Session, observations: Observatio
     const points: number[] = [];
     for (const s of group) for (let i = 0; i < session.times.length; i++) if (session.times[i] >= range[0] && session.times[i] <= range[1] && Number.isFinite(s.values[i])) points.push(s.values[i]);
     if (!points.length) continue;
-    let lo = Math.min(...points), hi = Math.max(...points);
+    let lo = Infinity, hi = -Infinity;
+    for (const v of points) { if (v < lo) lo = v; if (v > hi) hi = v; }
     if (hi === lo) { lo -= 1; hi += 1; }
     const chartY = y + 4, chartH = 36, chartX = 18, chartW = 174;
     doc.setDrawColor(210, 221, 230); doc.rect(chartX, chartY, chartW, chartH);
