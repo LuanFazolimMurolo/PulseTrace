@@ -44,6 +44,28 @@ describe("exportações", () => {
     const pdf = await reportPdf(s, analyze(s), range, true);
     expect((await pdf.text()).startsWith("%PDF")).toBe(true);
   });
+
+  it("gera relatório visual conciso com gráficos e orientações", async () => {
+    const entries = Array.from({ length: 40 }, (_, i) =>
+      new Date(Date.UTC(2026, 0, 1, 12, 0, i * 2)).toISOString() + "," +
+      (i > 0 ? "65" : "60") + "," + (i > 0 ? "86" : "82") + "," + (i > 0 ? "95" : "20"),
+    );
+    const s = await parseFile(new File([
+      "Timestamp,Temperatura GPU [°C],Temperatura de ponto quente da GPU [°C],GPU Potência [W]\\n".replace(/\\n/g, "\n") +
+      entries.join("\n"),
+    ], "jogo.csv"), { dateOrder: "DMY", utcOffsetMinutes: 0 });
+    const range: [number, number] = [s.times[0], s.times[s.times.length - 1]];
+    const observations = analyze(s);
+    // Hotspot não deve herdar limite crítico genérico da temperatura principal.
+    expect(observations.some(o => o.rule === "thermal-sustained" && o.sensor.includes("ponto quente"))).toBe(false);
+    const html = reportHtml(s, observations, range, false);
+    expect(html).toContain("<svg");
+    expect(html).toContain("Por onde começar");
+    expect(html).toContain("Medições essenciais");
+    expect(html).toContain("não diagnósticos confirmados");
+    const pdf = await reportPdf(s, observations, range, false);
+    expect((await pdf.text()).startsWith("%PDF")).toBe(true);
+  });
   it("preserva temperaturas negativas em exportação e reimportação", async () => {
     const s = await parseFile(
       new File(["Timestamp,CPU [°C]\n2026-01-01T00:00:00Z,-10"], "cold.csv"),
