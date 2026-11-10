@@ -34,7 +34,7 @@ export function Reports({ session, range, onError }: PageProps) {
       <section className="panel form-panel">
         <h3>Uma análise que você pode compartilhar</h3>
         <p>
-          Os relatórios usam o intervalo selecionado, distinguem medições de
+          Os relatórios priorizam gráficos e os sensores importantes, distinguem medições de
           hipóteses e incluem as limitações da análise. Revise nomes de arquivos
           e dispositivos antes de compartilhar.
         </p>
@@ -44,8 +44,8 @@ export function Reports({ session, range, onError }: PageProps) {
             value={technical ? "technical" : "simple"}
             onChange={(e) => setTechnical(e.target.value === "technical")}
           >
-            <option value="simple">Resumo simplificado</option>
-            <option value="technical">Resumo técnico</option>
+            <option value="simple">Visual e direto (recomendado)</option>
+            <option value="technical">Técnico (todos os sensores)</option>
           </select>
         </label>
       </section>
@@ -55,13 +55,13 @@ export function Reports({ session, range, onError }: PageProps) {
             type: "html" as const,
             Icon: FileCode2,
             title: "Relatório HTML",
-            text: "Documento independente, com observações, estatísticas e integridade. Funciona sem internet.",
+            text: "Resumo visual com gráficos, áreas para investigar e próximos passos. Abre sem internet.",
           },
           {
             type: "pdf" as const,
             Icon: FileText,
             title: "Relatório PDF",
-            text: "Documento paginado para guardar ou compartilhar com o suporte técnico.",
+            text: "Resumo paginado com tendências, hipóteses e roteiro de verificação.",
           },
           {
             type: "csv" as const,
