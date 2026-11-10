@@ -1,5 +1,6 @@
 import { AlertTriangle, CircleHelp, ShieldCheck } from "lucide-react";
 import type { Observation } from "../core/types";
+import { guidanceFor } from "../analysis/guidance";
 import { dateTime, duration, number, severityLabel } from "../core/format";
 export function ObservationCard({
   observation: o,
@@ -8,6 +9,7 @@ export function ObservationCard({
   observation: Observation;
   compact?: boolean;
 }) {
+  const guidance = guidanceFor(o);
   const Icon =
     o.severity === "insufficient"
       ? CircleHelp
@@ -26,7 +28,8 @@ export function ObservationCard({
             {severityLabel[o.severity]}
           </span>
         </div>
-        <p>{o.explanation}</p>
+        <p>{guidance.meaning}</p>
+        {!compact && <p className="guidance-area"><strong>Onde investigar:</strong> {guidance.area}</p>}
         <div className="observation-meta">
           <span>{o.component}</span>
           <span>{dateTime(o.time)}</span>
@@ -45,14 +48,14 @@ export function ObservationCard({
             <dl>
               <dt>Sensor</dt>
               <dd>{o.sensor}</dd>
-              <dt>Possíveis causas</dt>
-              <dd>{o.causes.join(" · ") || "Nenhuma causa estabelecida."}</dd>
-              <dt>Próximas verificações</dt>
-              <dd>
-                {o.checks.join(" · ") || "Colete mais leituras e contexto."}
-              </dd>
-              <dt>Confiança: {o.confidence}</dt>
-              <dd>{o.limitation}</dd>
+              <dt>O que pode explicar</dt>
+              <dd>{guidance.possibilities.join(" · ")}</dd>
+              <dt>O que verificar primeiro</dt>
+              <dd>{guidance.nextSteps.join(" · ")}</dd>
+              <dt>Limite da análise</dt>
+              <dd>{guidance.caution}</dd>
+              <dt>Confiança na observação</dt>
+              <dd>{o.confidence} — não é certeza de defeito.</dd>
             </dl>
           </details>
         )}

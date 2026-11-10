@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseFile } from "../../src/import/parser";
 import { analyze } from "../../src/analysis/rules";
+import { reportHighlights, selectReportSensors } from "../../src/analysis/guidance";
 import {
   investigate,
   parseWindowsEvents,
@@ -114,6 +115,20 @@ describe("motor determinístico", () => {
     const b = await session(["45", "55"], "CPU Package [°C]");
     expect(compareSessions(a, b)[0].other?.mean).toBe(50);
     expect(compareSessions(a, b)[1].other).toBeNull();
+  });
+});
+describe("prioridade dos sensores no relatório", () => {
+  it("usa carga física e consumo real da GPU, sem confundir limites", async () => {
+    const s = await session(
+      ["68,74,170,70", "69,75,170,85"],
+      "Carga da memória virtual [%],Carga da memória física [%],Limite de potência da GPU (nominal) [W],GPU Potência [W]",
+    );
+    const range: [number, number] = [s.times[0], s.times[1]];
+    const highlights = reportHighlights(s, range);
+    expect(highlights.find(h => h.label === "RAM física máxima")?.value).toBe(75);
+    const selected = selectReportSensors(s, range, false);
+    expect(selected.some(x => x.label === "GPU Potência")).toBe(true);
+    expect(selected.some(x => x.label.includes("Limite de potência"))).toBe(false);
   });
 });
 describe("eventos Windows", () => {

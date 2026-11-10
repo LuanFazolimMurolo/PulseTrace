@@ -96,7 +96,7 @@ export function analyze(
   for (const sensor of session.sensors) {
     if (!sensor.count) continue;
     if (sensor.metric === "temperature" && sensor.unit === "°C") {
-      const hotspot = /hot.?spot|junction|juncao/.test(fold(sensor.label));
+      const hotspot = /hot.?spot|ponto quente|junction|juncao/.test(fold(sensor.label));
       const warning = hotspot
         ? 100
         : sensor.component === "CPU"
@@ -348,7 +348,24 @@ export function analyze(
     limitation:
       "O fim do CSV não comprova travamento ou desligamento inesperado. Dados após a última gravação podem ter sido perdidos.",
   });
-  return observations.sort(
+  // Present only one power-transition finding per component. Other sensor
+  // traces remain available for technical inspection; this is not evidence of
+  // one physical failure.
+  const groups = new Map<string, Observation[]>();
+  for (const observation of observations) {
+    if (observation.rule !== "power-change") continue;
+    const list = groups.get(observation.component) ?? [];
+    list.push(observation);
+    groups.set(observation.component, list);
+  }
+  const summarized = observations.filter((o) => o.rule !== "power-change");
+  for (const list of groups.values()) {
+    const representative = [...list].sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0];
+    if (list.length > 1)
+      representative.explanation += ` Foram reunidas ${list.length} observações de sensores de potência do mesmo componente; elas não indicam ${list.length} defeitos.`;
+    summarized.push(representative);
+  }
+  return summarized.sort(
     (a, b) =>
       ({ critical: 0, warning: 1, insufficient: 2, normal: 3 })[a.severity] -
         { critical: 0, warning: 1, insufficient: 2, normal: 3 }[b.severity] ||
