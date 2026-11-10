@@ -96,7 +96,7 @@ export function analyze(
   for (const sensor of session.sensors) {
     if (!sensor.count) continue;
     if (sensor.metric === "temperature" && sensor.unit === "°C") {
-      const hotspot = /hot.?spot|junction|juncao/.test(fold(sensor.label));
+      const hotspot = /hot.?spot|ponto quente|junction|juncao/.test(fold(sensor.label));
       const warning = hotspot
         ? 100
         : sensor.component === "CPU"
