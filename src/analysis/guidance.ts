@@ -98,7 +98,7 @@ export function reportHighlights(session: Session, range: TimeRange): Highlight[
     ["CPU máxima", find(s => s.component === "CPU" && mainTemp(s) && /package|inteira|cpu/.test(fold(s.label)))],
     ["GPU máxima", find(s => s.component === "GPU" && mainTemp(s))],
     ["Hotspot GPU", find(s => s.component === "GPU" && s.metric === "temperature" && /hot.?spot|ponto quente|junction/.test(fold(s.label)))],
-    ["RAM máxima", find(s => s.component === "Memória" && s.unit === "%" && s.metric === "usage")],
+    ["RAM física máxima", find(s => s.component === "Memória" && s.unit === "%" && s.metric === "usage" && /memoria fisica|physical memory|ram/.test(fold(s.label)))],
   ];
   const used = new Set<string>();
   return spec.flatMap(([label, sensor]) => {
@@ -112,13 +112,22 @@ export function reportHighlights(session: Session, range: TimeRange): Highlight[
 export function selectReportSensors(session: Session, range: TimeRange, technical: boolean): Sensor[] {
   if (technical) return session.sensors.filter(s => stats(session, s, range).count > 0);
   const chosen = new Map<string, Sensor>();
+  const present = (s: Sensor) => stats(session, s, range).count > 0;
+  const pick = (match: (s: Sensor) => boolean) => {
+    const s = session.sensors.find(s => match(s) && present(s));
+    if (s) chosen.set(s.id, s);
+  };
   for (const h of reportHighlights(session, range)) chosen.set(h.sensor.id, h.sensor);
-  const names = [/potencia total da cpu|cpu package power|potencia da gpu|gpu power/, /\+5v|\+12v/, /thermal throttling|estrangulamento termico|limite de desempenho - termico/];
-  for (const re of names) {
-    for (const s of session.sensors) {
-      if (re.test(fold(s.label)) && stats(session, s, range).count > 0) chosen.set(s.id, s);
-      if (chosen.size >= 12) break;
-    }
-  }
+  // Actual power readings only. Nominal/maximum power *limits* are not consumption.
+  pick(s => s.metric === "power" && s.unit === "W"
+    && /potencia total da cpu|cpu package power/.test(fold(s.label))
+    && !/limite|limit/.test(fold(s.label)));
+  pick(s => s.metric === "power" && s.unit === "W"
+    && /^(gpu potencia|gpu power|potencia da gpu)$/.test(fold(s.label))
+    && !/limite|limit|nominal|maximo/.test(fold(s.label)));
+  // Prefer actual motherboard rails, not arbitrary GPU voltage and power inputs.
+  pick(s => /^\+12v$/.test(fold(s.label)));
+  pick(s => /^\+5v$/.test(fold(s.label)));
+  pick(s => s.metric === "throttle" && /thermal throttling|estrangulamento termico|limite de desempenho - termico/.test(fold(s.label)));
   return [...chosen.values()].slice(0, 12);
 }
