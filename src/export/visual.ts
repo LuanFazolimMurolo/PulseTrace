@@ -7,7 +7,7 @@ import type { jsPDF } from "jspdf";
 const safe = (v: unknown) => String(v).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
 );
-const note = "Pistas de investigação, não diagnósticos confirmados. O CSV não mede diretamente a qualidade da fonte nem comprova a causa de um desligamento.";
+const note = "As observações não comprovam defeitos físicos. São pistas de investigação, não diagnósticos confirmados. O CSV não mede diretamente a qualidade da fonte nem comprova a causa de um desligamento.";
 const palette = ["#14b8a6", "#60a5fa", "#fb923c", "#a78bfa"];
 
 /** Original samples only; never interpolate absent values or invent samples. */
